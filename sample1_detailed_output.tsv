@@ -1,0 +1,10 @@
+# Detailed report for sample sample1
+chrom	startpos	endpos	nBAFs	cbs_call	cbs_evaluation
+1	10	399	0	2/2	UN
+1	400	600	11	2/3	TP
+1	620	1134	1	2/2	UN
+2	100	300	11	2/2	FN
+2	330	809	0	2/2	UN
+3	100	440	0	2/2	UN
+3	500	700	11	2/3	FP
+3	740	6745	0	2/2	UN
