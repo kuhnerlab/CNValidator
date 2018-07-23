@@ -1,0 +1,9 @@
+patient	sample	chr	startpos	endpos	intA	intB
+test	sample3	1	10	399	2	2
+test	sample3	1	400	600	4	4
+test	sample3	1	620	1134	2	2
+test	sample3	2	100	300	2	4
+test	sample3	2	330	809	2	2
+test	sample3	3	100	440	2	2
+test	sample3	3	500	700	2	3
+test	sample3	3	740	6745	2	2

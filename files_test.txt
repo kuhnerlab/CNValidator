@@ -1,0 +1,9 @@
+#SEGMENTATION
+cbs
+./test1_segmentation.tsv
+./test2_segmentation.tsv
+./test3_segmentation.tsv
+#NORMAL_BAF
+./test_normal_baf.txt
+#SAMPLE_BAF
+./test_baf.txt
