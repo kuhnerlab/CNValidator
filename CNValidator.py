@@ -30,7 +30,7 @@ max_useable_baf = 0.65   # if a position in the patient normal sample
 
 # BAF scores with values contained in "badbafvals" will be ignored
 # when determing whether a segment "matches" another
-badbafvals = ["NA",]
+badbafvals = ["NA","?"]
 
 # segments which contain fewer than "min_bafcount" positions with valid
 # BAF scores will be discarded
@@ -39,6 +39,13 @@ min_bafcount = 10
 # at least this fraction of positions must "match" for two segments to be
 # considered "matching"
 min_matching = 0.95
+
+# These chromosomes should not be used (generally because they are not
+# diploid).  If your data, for example, calls the Y chromosome "chr24",
+# you can add that name to this list.  (We do not exclude chr24 in the
+# default version because in non-human data this could be an autosome.)
+
+invalid_chromosomes = ["X","Y","chrX","chrY"]
 
 #######################################################################
 
@@ -71,15 +78,16 @@ def readinputfile(infilename):
   iterator = allrfiles.__iter__()
   for line in iterator:
     line = line.rstrip()
+    if line == "":  continue    # skip blank lines
     if line in rtags:
       doing = line
       if doing == rtags[0]:
         line = iterator.next()    
         line = line.rstrip()
         rsegfiledict[line] = []
-        rsegref = rsegfiledict[line]
+        rsegref = rsegfiledict[line[1:]   
     else:
-      if doing == rtags[0]:     # SEGMNETATION
+      if doing == rtags[0]:     # SEGMENTATION
         rsegref.append(line)
       if doing == rtags[1]:     # NORMAL_BAF
         rnormfilename = line
@@ -201,16 +209,25 @@ def readbafs(filename,filterthese):
   bafsbychrom = {}
   for line in local_open(filename,"r"):
     if line.startswith("##"):  continue
+    if line == "":  continue    # skip blank lines
     line = line.rstrip().split("\t")
+    line = [noquotes(x) for x in line]
     if bafchrindex is None:
-      line = [noquotes(x) for x in line]
       bafchrindex = line.index("Chr")
       bafposindex = line.index("Position")
       sids = line[3:]
       continue
 
     bafchr = line[bafchrindex]
+    if bafchr in invalid_chromosomes:  # silently discard positions on
+      continue                         # non-diploid chromosomes
+
     bafpos = int(line[bafposindex])
+
+    # silently throw out markers whose name begins with "cnvi"
+    marker_name = line[0]             # in good R fashion, the first column
+    if marker_name.startswith("cnvi"):# has no header and we assume that it
+      continue                        # is the marker's name...we hope so
 
     if filterthese:
       if inbadpos(filterthese[bafchr],bafpos):
@@ -403,6 +420,7 @@ for method in segmethods:
     check_sid = None
     for line in local_open(file,"r"):
       line = line.rstrip().split("\t")
+      if line == "":  continue    # skip blank lines
       line = [noquotes(x) for x in line]
       if line[0] == "#":
         continue
@@ -506,10 +524,13 @@ newends = {}
 for chrom in allchroms:
   allpos = list(allstarts[chrom]) + list(allends[chrom])
   allpos = sorted(set(allpos))  # make a unique sorted list
-  pos1 = allpos[0]
   newstarts[chrom] = set()
   newends[chrom] = set()
-  for pos2 in allpos[1:]:
+  # use indices to move startpos and endpos down the list
+  for i1 in xrange(len(allpos) - 1):
+    i2 = i1 + 1
+    pos1 = allpos[i1]
+    pos2 = allpos[i2]
     if insegment([pos1,pos2],chrom,origsegments):
       if isend(pos1,chrom,origsegments):
         pos1 -= 1
@@ -523,6 +544,22 @@ for chrom in allchroms:
         minisegs[chrom] = [[pos1,pos2],]
   newstarts[chrom] = sorted(newstarts[chrom])
   newends[chrom] = sorted(newends[chrom])
+
+#  for pos2 in allpos[1:]:
+#    if insegment([pos1,pos2],chrom,origsegments):
+#      if isend(pos1,chrom,origsegments):
+#        pos1 -= 1
+#      if isstart(pos2,chrom,origsegments):
+#        pos2 += 1
+#      newstarts[chrom].add(pos1)
+#      newends[chrom].add(pos2)
+#      if chrom in minisegs:
+#        minisegs[chrom].append([pos1,pos2])
+#      else:
+#        minisegs[chrom] = [[pos1,pos2],]
+#  newstarts[chrom] = sorted(newstarts[chrom])
+#  newends[chrom] = sorted(newends[chrom])
+
 allstarts = newstarts
 allends = newends
 
@@ -751,14 +788,14 @@ for method in segmethods:
       nsegsvalid += segvalidated[method][sample][chrom]
       nsegscontradict += segcontradicted[method][sample][chrom]
     mbtotal = mbtotal/1000000
-    outline += ("%.2f" % mbtotal) + "\t"
+    outline += ("%.6f" % mbtotal) + "\t"
     validated = validated/1000000
-    outline += ("%.2f" % validated) + "\t"
+    outline += ("%.6f" % validated) + "\t"
     contradicted = contradicted/1000000
-    outline += ("%.2f" % contradicted) + "\t"
+    outline += ("%.6f" % contradicted) + "\t"
     if validated + contradicted != 0.0:
       accuracy = validated / (validated + contradicted)
-      outline += ("%.2f" % accuracy) + "\t"
+      outline += ("%.6f" % accuracy) + "\t"
     else:
       outline += "NA\t"
     outline += str(nsegs) + "\t" + str(nsegsvalid) + "\t"
@@ -774,7 +811,7 @@ print "Writing overall report to",overallname
 overallout.close()
 
 for sample in allsamples:
-  detailname = sample+"_detail_output.tsv"
+  detailname = sample+"_detailed_output.tsv"
   detailout = local_open(detailname,"w")
   print "Writing detailed report for sample",sample,"to",detailname
   outline = "# Detailed report for sample "  + sample
