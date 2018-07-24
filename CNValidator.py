@@ -85,7 +85,7 @@ def readinputfile(infilename):
         line = iterator.next()    
         line = line.rstrip()
         rsegfiledict[line] = []
-        rsegref = rsegfiledict[line[1:]   
+        rsegref = rsegfiledict[line[1:]]
     else:
       if doing == rtags[0]:     # SEGMENTATION
         rsegref.append(line)
