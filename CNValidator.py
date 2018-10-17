@@ -84,7 +84,7 @@ def readinputfile(infilename):
       if doing == rtags[0]:
         line = iterator.next()    
         line = line.rstrip()
-        rsegfiledict[line] = []
+        rsegfiledict[line[1:]] = []
         rsegref = rsegfiledict[line[1:]]
     else:
       if doing == rtags[0]:     # SEGMENTATION
@@ -750,11 +750,11 @@ for method in segmethods:
         length = seg["length"]
         possible_coverage[method][sample][chrom] += length
         segcount[method][sample][chrom] += 1
-        if seg["condition"] == "Invalid":
+        if seg["evaluation"] == "UN":
           discarded_coverage[method][sample][chrom] += length
         else:
           achieved_coverage[method][sample][chrom] += length
-          if not seg["balanced"] and seg["condition"] == "Match":
+          if (not seg["balanced"]) and seg["condition"] == "Match":
             validated_coverage[method][sample][chrom] += length
             segvalidated[method][sample][chrom] += 1
             continue
