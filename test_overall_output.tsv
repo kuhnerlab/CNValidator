@@ -1,4 +1,4 @@
 Sample	Method	MB_total	MB_validated	MB_contradicted	MB_accuracy	Segments_total	Segments_validated	Segments_contradicted	Segments_accuracy
-sample1	cbs	0.008335	0.007418	0.000917	0.889982	8	5	3	0.62
-sample3	cbs	0.008335	0.007820	0.000515	0.938212	8	7	1	0.88
-sample2	cbs	0.008335	0.007820	0.000515	0.938212	8	7	1	0.88
+sample1	bs	0.008335	0.000201	0.000402	0.333333	8	1	2	0.33
+sample3	bs	0.008335	0.000603	0.000000	1.000000	8	3	0	1.00
+sample2	bs	0.008335	0.000603	0.000000	1.000000	8	3	0	1.00
