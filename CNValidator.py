@@ -47,6 +47,19 @@ min_matching = 0.95
 
 invalid_chromosomes = ["X","Y","chrX","chrY"]
 
+# These strings give the column headers; if your input file has non-standard
+# column headers, you can insert yours into the ends of these lists, but
+# this will FAIL MISERABLY if you use a name that the program expects for, say,
+# patient to indicate your sample.
+
+patheaders = ["patient"]
+sampleheaders = ["sample","biopsy"]
+chromheaders = ["chr","chrom"]
+startheaders = ["startpos","segstart"]
+endheaders = ["endpos","segend"]
+aheaders = ["intA"]
+bheaders = ["intB"]
+
 #######################################################################
 
 def local_open(filename,mode):
@@ -121,7 +134,8 @@ def insegment(newseg,chrom,origsegments):
   newend = newseg[1]
   for method in origsegments:
     for samplechromkey in origsegments[method]:
-      if ('_'+chrom) not in samplechromkey:
+      mysample, mychrom = samplechromkey.split("_")
+      if mychrom != chrom:
         continue
       samplesegs = origsegments[method][samplechromkey]
       for seg in samplesegs:
@@ -360,6 +374,19 @@ def addscoredsegto(testdict,sid,chrom,pos,bafs,matches,scored):
   if matches:
     testdict[newkey]["matches"] = matches
 
+def findindex(line,headers):
+  found = False
+  for item in headers:
+    try:
+      myindex = line.index(item)
+      found = True
+      break
+    except:
+      continue
+  if not found:
+    print "Could not find column header",headers,"in line",line
+  return myindex
+
 #######################################################################
 
 import sys
@@ -426,13 +453,13 @@ for method in segmethods:
         continue
   
       if patindex is None:
-        patindex = line.index("patient")    
-        sampleindex = line.index("sample")
-        chromindex = line.index("chr")
-        startindex = line.index("startpos")
-        endindex = line.index("endpos")
-        aindex = line.index("intA")
-        bindex = line.index("intB")
+        patindex = findindex(line,patheaders)
+        sampleindex = findindex(line,sampleheaders)
+        chromindex = findindex(line,chromheaders)
+        startindex = findindex(line,startheaders)
+        endindex = findindex(line,endheaders)
+        aindex = findindex(line,aheaders)
+        bindex = findindex(line,bheaders)
         continue
   
       pid = line[patindex]
@@ -544,21 +571,6 @@ for chrom in allchroms:
         minisegs[chrom] = [[pos1,pos2],]
   newstarts[chrom] = sorted(newstarts[chrom])
   newends[chrom] = sorted(newends[chrom])
-
-#  for pos2 in allpos[1:]:
-#    if insegment([pos1,pos2],chrom,origsegments):
-#      if isend(pos1,chrom,origsegments):
-#        pos1 -= 1
-#      if isstart(pos2,chrom,origsegments):
-#        pos2 += 1
-#      newstarts[chrom].add(pos1)
-#      newends[chrom].add(pos2)
-#      if chrom in minisegs:
-#        minisegs[chrom].append([pos1,pos2])
-#      else:
-#        minisegs[chrom] = [[pos1,pos2],]
-#  newstarts[chrom] = sorted(newstarts[chrom])
-#  newends[chrom] = sorted(newends[chrom])
 
 allstarts = newstarts
 allends = newends
